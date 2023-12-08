@@ -25,6 +25,7 @@ def configure(settings: kopf.OperatorSettings, **_):
     settings.persistence.diffbase_storage = kopf.AnnotationsDiffBaseStorage(
         prefix=MYNAME,
         key='last-handled-configuration')
+    settings.posting.level = logging.WARN
 
 @functools.cache
 def k8s():
@@ -43,9 +44,8 @@ def is_interesting(meta, spec, **_):
 
 @kopf.on.create('Service', when=is_interesting)
 @kopf.on.update('Service', when=is_interesting)
-def handle_service(meta, spec, logger, **kwargs):
+def handle_service(meta, spec, logger, patch, **kwargs):
     """Assign an external IP to a service"""
-    patch = {}
 
     # Without locking, things may fail if multiple services need to be
     # handled simultaneously
@@ -54,21 +54,14 @@ def handle_service(meta, spec, logger, **kwargs):
         if not eips:
             eips = [pick_external_ip(meta, spec)]
             patch.setdefault('spec', {})
-            patch['spec']['externalIPs'] = eips
+            patch.spec['externalIPs'] = eips
             logger.info(f'Assigned external IP {eips[0]}')
 
         lbip = spec.get('loadBalancerIP')
         if not lbip:
             lbip = eips[0]
-            patch.setdefault('spec', {})
-            patch['spec']['loadBalancerIP'] = lbip
+            patch.spec['loadBalancerIP'] = lbip
             logger.info(f'Assigned load balancer IP {lbip}')
-
-        if patch:
-            logger.debug(f'Patching: {patch}')
-            k8s().patch_namespaced_service(name=meta.name,
-                                           namespace=meta.namespace,
-                                           body=patch)
 
 def pick_external_ip(meta, spec):
     """Find a free IP address and return it"""
