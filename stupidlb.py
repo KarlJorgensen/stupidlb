@@ -10,6 +10,8 @@ import kopf
 import kubernetes
 import logging
 
+MYNAME = 'stupidlb.jorgensen.org.uk'
+
 def valid_ips():
     return {'192.168.0.' + str(x)
             for x in range(224,240)}
@@ -19,9 +21,9 @@ LOCK = threading.Lock()
 @kopf.on.startup()
 def configure(settings: kopf.OperatorSettings, **_):
     settings.persistence.progress_storage = kopf.AnnotationsProgressStorage(
-        prefix='stupidlb.jorgensen.org.uk')
+        prefix=MYNAME)
     settings.persistence.diffbase_storage = kopf.AnnotationsDiffBaseStorage(
-        prefix='stupidlb.jorgensen.org.uk',
+        prefix=MYNAME,
         key='last-handled-configuration')
 
 @functools.cache
@@ -31,9 +33,9 @@ def k8s():
     return kubernetes.client.CoreV1Api()
 
 def is_interesting(meta, spec, **_):
-    if meta.get('annotations', {}).get('stupidlb.jorgensen.org.uk/kopf-managed', 'yes') == 'no':
+    if spec.get('type') != 'LoadBalancer':
         return False
-    if spec['type'] != 'LoadBalancer':
+    if meta.get('annotations', {}).get(MYNAME + '/kopf-managed', 'yes') == 'no':
         return False
     if spec.get('externalIPs', []) and spec.get('loadBalancerIP'):
         return False
