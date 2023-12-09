@@ -1,0 +1,105 @@
+#
+# A few test services to try out various scenarios with stupidlb
+#
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+  labels:
+    stupidlb-test: "yes"
+  name: test
+spec:
+  type: LoadBalancer
+  ports:
+  - name: dummy
+    port: 88
+    protocol: TCP
+    targetPort: http
+  selector:
+    app.kubernetes.io/component: dummy
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+  labels:
+    stupidlb-test: "yes"
+  name: test-clusterip
+spec:
+  type: ClusterIP
+  ports:
+  - name: dummy
+    port: 88
+    protocol: TCP
+    targetPort: http
+  selector:
+    app.kubernetes.io/component: dummy
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    stupidlb.jorgensen.org.uk: ignore
+  labels:
+    stupidlb-test: "yes"
+  name: test-ignored
+spec:
+  type: LoadBalancer
+  ports:
+  - name: dummy
+    port: 88
+    protocol: TCP
+    targetPort: http
+  selector:
+    app.kubernetes.io/component: dummy
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    stupidlb-test: "yes"
+  name: test-with-lb-ip
+spec:
+  type: LoadBalancer
+  loadBalancerIP: 1.2.3.4
+  ports:
+  - name: dummy
+    port: 88
+    protocol: TCP
+    targetPort: http
+  selector:
+    app.kubernetes.io/component: dummy
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    stupidlb-test: "yes"
+  name: test-in-use1
+spec:
+  type: LoadBalancer
+  loadBalancerIP: 192.168.0.238
+  ports:
+  - name: dummy
+    port: 88
+    protocol: TCP
+    targetPort: http
+  selector:
+    app.kubernetes.io/component: dummy
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    stupidlb-test: "yes"
+  name: test-in-use2
+spec:
+  type: LoadBalancer
+  loadBalancerIP: 192.168.0.238
+  ports:
+  - name: dummy
+    port: 88
+    protocol: TCP
+    targetPort: http
+  selector:
+    app.kubernetes.io/component: dummy

@@ -85,7 +85,7 @@ def handle_service(meta, spec, logger, patch, **_):
     with LOCK:
         eips = spec.get('externalIPs', [])
         if not eips:
-            eips = [pick_external_ip(meta, spec)]
+            eips = [pick_external_ip(meta, spec, logger)]
             patch.spec['externalIPs'] = eips
             logger.info(f'Assigned external IP {eips[0]}')
 
@@ -95,17 +95,17 @@ def handle_service(meta, spec, logger, patch, **_):
             patch.spec['loadBalancerIP'] = lbip
             logger.info(f'Assigned load balancer IP {lbip}')
 
-def pick_external_ip(meta, spec):
+def pick_external_ip(meta, spec, logger):
     """Find a free IP address and return it"""
     used = set(ips_in_use(exclude_ns=meta.namespace,
                           exclude_name=meta.name))
-    print(f'{used=}')
+    logger.debug(f'{used=}')
 
     avail = valid_ips() - used
     if not avail:
         raise kopf.TemporaryError('No free IPs',
                                   delay=60)
-    print(f'{avail=}')
+    logger.debug(f'{avail=}')
 
     lbip = spec.get('loadBalancerIP')
     if lbip:
