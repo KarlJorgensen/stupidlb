@@ -1,20 +1,16 @@
 #!/usr/bin/make -f
 
-export KUBECTL_CONTEXT=home
-export KUBECTL_NAMESPACE=kj
+.PHONY: all
+all : docker-push helm-upgrade rollout-restart
 
-.PHONY: run
-run : pylint test-setup
-	. bin/activate; kopf run --namespace $(KUBECTL_NAMESPACE) --dev stupidlb.py
+.PHONY: docker-push
+docker-push:
+	$(MAKE) -C docker push
 
-.PHONY: pylint
-pylint :
-	. bin/activate; pylint stupidlb.py
+.PHONY: helm-upgrade
+helm-upgrade:
+	$(MAKE) -C stupidlb upgrade
 
-.PHONY: test-setup
-test-setup: clean-service
-	kubectl --namespace $(KUBECTL_NAMESPACE) apply -f test-services.yaml
-
-.PHONY: clean clean-service
-clean clean-service:
-	kubectl --namespace $(KUBECTL_NAMESPACE) delete service -l stupidlb-test
+.PHONY: rollout-restart
+rollout-restart:
+	kubectl rollout restart deploy stupidlb

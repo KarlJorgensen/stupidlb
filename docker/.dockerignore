@@ -1,0 +1,12 @@
+# emacs files
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+# files specific to stupidlb
+Makefile
+test-services.yaml

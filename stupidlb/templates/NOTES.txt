@@ -1,0 +1,3 @@
+The Stupid Load Balancer has been installed.
+
+Enjoy.
