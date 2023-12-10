@@ -2,7 +2,7 @@
 
 SUFFIX=
 VERSION=$(shell cat ../version.txt)
-REPO=registry.home.jorgensen.org.uk/stupidlb
+REPO=karljorgensen/stupidlb
 
 IMAGE=$(REPO):$(VERSION)$(SUFFIX)
 

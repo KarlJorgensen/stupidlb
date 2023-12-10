@@ -18,7 +18,7 @@ CIDRs: []
 replicaCount: 1
 
 image:
-  repository: registry.home.jorgensen.org.uk/stupidlb
+  repository: karljorgensen/stupidlb
   pullPolicy: ""
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
