@@ -32,3 +32,4 @@ tramp
 .\#*
 # files specific to stupidlb
 Makefile
+dev-values.yaml

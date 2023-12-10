@@ -1,3 +1,14 @@
-The Stupid Load Balancer has been installed.
+The Stupid Load Balancer has been installed, and will assign IP
+addresses to Services of type LoadBalancer from the following IP
+ranges:
+
+{{- range .Values.CIDRs }}
+- {{ . }}
+{{- end }}
+
+Note that once an IP address is assigned to a load balancer service,
+the IP address "sticks" - if you later change the stupidlb
+configuration to different CIDRs, this will only affect load balancer
+services created _after_ the change.
 
 Enjoy.

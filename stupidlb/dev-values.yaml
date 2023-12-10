@@ -1,0 +1,12 @@
+# Development values for stupidlb
+#
+# These are not part of the official chart; they are merely set for
+# developers of stupidlb for convenience; they override the official
+# ones.
+#
+
+image:
+  pullPolicy: Always
+
+CIDRs:
+  - 192.168.0.224/28
