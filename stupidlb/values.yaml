@@ -2,6 +2,19 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+# List of CIDRs (or individual IP addresses) that the operator may
+# assign to load balancers.  These are assumed to be dedicated for the
+# use for load balancers.
+#
+# The operator will avoid assigning IP addresses which are already
+# used by other load balancers; i.e. it is safe for users to
+# explicitly specify an IP address on their load balancer from this
+# range (assuming it is not already in use); the operator will do the
+# right thing.
+CIDRs: []
+  # - 192.168.0.224/28
+  # - 192.168.0.240/8
+
 replicaCount: 1
 
 image:

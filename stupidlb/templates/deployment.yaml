@@ -37,6 +37,11 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           {{- end }}
           env:
+            {{- if not (.Values.CIDRs  | default "") }}
+            {{- fail ".Values.CIDRs must be set - no sensible default value is possible" }}
+            {{- end }}
+            - name: CIDRS
+              value: {{ quote (join "," .Values.CIDRs) }}
             - name: OPTIONS
               value: "--liveness=http://0.0.0.0:8080/healthz {{ .Values.options }}"
           livenessProbe:

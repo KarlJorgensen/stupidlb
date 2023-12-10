@@ -6,6 +6,9 @@ REPO=registry.home.jorgensen.org.uk/stupidlb
 
 IMAGE=$(REPO):$(VERSION)$(SUFFIX)
 
+# Dummy CIDRs for testing
+export CIDRS = 192.168.0.224/28,192.168.50.1
+
 .PHONY: image
 image: pylint
 	docker build -t $(IMAGE) .

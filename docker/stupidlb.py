@@ -14,8 +14,10 @@ addresses).
 """
 
 import functools
+import ipaddress
 import logging
 import threading
+import os
 
 import kopf
 import kubernetes
@@ -30,8 +32,18 @@ def valid_ips():
     assign from.
 
     """
-    return {'192.168.0.' + str(x)
-            for x in range(224,240)}
+    cidrs = os.environ.get('CIDRS')
+    if not cidrs:
+        raise ValueError('Environment variable CIDRS is not set. We need that.')
+
+    res = set()
+    for network in [ipaddress.IPv4Network(cidr)
+                    for cidr in cidrs.split(',')]:
+        res |= {str(h) for h in network.hosts()}
+        # network.hosts() excludes these by default
+        res |= {str(network.network_address), str(network.broadcast_address)}
+
+    return res
 
 LOCK = threading.Lock()
 
@@ -47,6 +59,10 @@ def configure(settings: kopf.OperatorSettings, **_):
         prefix=MYNAME,
         key='last-handled-configuration')
     settings.posting.level = logging.WARN
+
+    if not valid_ips():
+        raise ValueError('No valid IP ranges!?')
+    print(f'Valid IPs: {valid_ips()}')
 
 @functools.cache
 def k8s():
