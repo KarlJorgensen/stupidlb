@@ -5,8 +5,8 @@
 # ones.
 #
 
-image:
-  pullPolicy: Always
+# image:
+#   pullPolicy: Always
 
 CIDRs:
   - 192.168.0.224/28
