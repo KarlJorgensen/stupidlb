@@ -15,7 +15,7 @@ image: pylint
 
 .PHONY: push
 push: image
-	docker push $(IMAGE)
+	docker push -q $(IMAGE)
 
 # The namespace indicated by the current kubectl context
 KUBECTL_NAMESPACE = $(shell kubectl config view --minify -o jsonpath='{..namespace}' )

@@ -93,25 +93,42 @@ def is_interesting(meta, spec, **_):
 
 @kopf.on.create('Service', when=is_interesting)
 @kopf.on.update('Service', when=is_interesting)
-def handle_service(meta, spec, logger, patch, **_):
+def handle_service(meta, spec, logger, body, patch, **_):
     """Assign an external IP to a service"""
+
+    try:
+        _existing = body['status']['loadBalancer']['ipAddress']
+        # We don't touch stuff which already has got a loadbalancer IP
+        # address..
+        return
+    except KeyError:
+        pass
 
     # Without locking, things may fail if multiple services need to be
     # handled simultaneously
     with LOCK:
         eips = spec.get('externalIPs', [])
+        if spec.get('loadBalancerIP', None):
+            eips = [spec.get('loadBalancerIP')] + eips
+
         if not eips:
             eips = [pick_external_ip(meta, spec, logger)]
-            set_patch(patch, 'spec.externalIPs', eips)
             logger.info(f'Assigned external IP {eips[0]}')
 
-        lbip = spec.get('loadBalancerIP')
-        if not lbip:
-            lbip = eips[0]
-            set_patch(patch, 'spec.loadBalancerIP', lbip)
-            logger.info(f'Assigned load balancer IP {lbip}')
+        patch['spec'] = {
+            'externalIPs': eips,
+            'loadBalancerIP': eips[0]
+        }
+        patch['status'] = {
+            'loadBalancer': {
+                'ingress': [
+                    {'ip': eips[0]}
+                ]
+            }
+        }
 
-        set_patch(patch, 'status.loadBalancer.ipAddress', lbip)
+        logger.info('Patch is:')
+        logger.info(patch)
 
 def pick_external_ip(meta, spec, logger):
     """Find a free IP address and return it"""
@@ -156,16 +173,3 @@ def ips_in_use(exclude_ns:str=None, exclude_name:str=None):
 
         if service.spec.external_i_ps:
             yield from service.spec.external_i_ps
-
-def set_patch(patch, item: str, value):
-    """Update the `patch`
-
-    This is smart enough to create missing entries in the dict tree
-
-    """
-    items = item.split('.')
-    thispatch = patch
-    for thisitem in items[:-1]:
-        thispatch.setdefault(thisitem, {})
-        thispatch = thispatch[thisitem]
-    thispatch[items[-1]] = value
